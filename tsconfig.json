@@ -1,0 +1,28 @@
+{
+    "compilerOptions": {
+        "target": "esnext",
+        "outDir": "dist",
+        "module": "commonjs",
+        "lib": ["esnext"],
+        "strict": true,
+        "moduleResolution": "node",
+        "rootDir": "src",
+        "types": [
+            "lua-types/jit",
+            "@opct/openos",
+            "@opct/gui",
+            "@opct/image",
+        ],
+        "baseUrl": "./src"
+    },
+    "tstl": {
+        "luaTarget": "5.2",
+        "luaLibImport": "none",
+        "noImplicitSelf": true,
+        "noHeader": true,
+        "noResolvePaths": [
+            "dns",
+            "network",
+        ]
+    }
+}

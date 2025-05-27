@@ -1,0 +1,18 @@
+{
+  "name": "enoua5-oc-packages",
+  "version": "1.0.0",
+  "description": "These packages are meant to be downloaded to a central packages server",
+  "scripts": {
+    "build": "tstl",
+    "watch": "tstl --watch"
+  },
+  "keywords": [],
+  "author": "enoua5",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "@opct/openos": "^0.1.5",
+    "@opct/gui": "^0.1.5",
+    "typescript-to-lua": "^1.31.0"
+  }
+}
