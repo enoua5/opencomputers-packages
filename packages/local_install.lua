@@ -1,4 +1,6 @@
 
+local shell = require("shell")
+
 local args = shell.parse(...)
 local program = args[1]
 if not string.gmatch(program, "^[%d%l%u%-_]$") then
