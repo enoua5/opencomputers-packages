@@ -17,10 +17,11 @@ export type LttpRequestEvent = [
     Headers,
     Body,
     LttpResponseHandler,
-]
+];
+export type LttpRequestCallback = (...args: [...LttpRequestEvent]) => void;
 
 declare module "lttp" {
-    export const listen: (port: number, timeout?: number) => void;
+    export const listen: (port: number, callback: LttpRequestCallback, timeout?: number) => void;
     export const unlisten: (port: number) => void;
     export const request: (
         address: Address,
