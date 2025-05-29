@@ -5,14 +5,14 @@ export type Port = number;
 export type Headers = { [key: string]: string };
 export type Body = string | null;
 export type Status = number;
-export type ResponseHandler = (status: Status, headers?: Headers, body?: Body) => void;
-export type RequestEvent = [
+export type LttpResponseHandler = (status: Status, headers?: Headers, body?: Body) => void;
+export type LttpRequestEvent = [
     Channel,
     Address, // origin address
     Port,
     Headers,
     Body,
-    ResponseHandler,
+    LttpResponseHandler,
 ]
 
 declare module "lttp" {

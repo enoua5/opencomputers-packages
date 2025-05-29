@@ -5,15 +5,27 @@ import * as computer from "computer";
 import * as serialization from "serialization";
 import * as uuid from "uuid";
 
-type Channel = number;
-type Address = string;
-type Port = number;
-type Body = string | null;
-type Headers = { [key: string]: string };
 type TcpOpenArgs = ["connection", Channel, Address, Port];
 type TcpCloseArgs = ["close", Channel, Address, Port];
 type TcpMessageArgs = ["message", Channel, string, Address, Port];
 type TcpEventArgs = TcpOpenArgs | TcpCloseArgs | TcpMessageArgs;
+export type Channel = number;
+export type Address = string;
+export type Port = number;
+export type Headers = { [key: string]: string };
+export type Body = string | null;
+export type Status = number;
+export type LttpResponseHandler = (status: Status, headers?: Headers, body?: Body) => void;
+export type LttpRequestEvent = [
+    Channel,
+    Address, // origin address
+    Port,
+    Headers,
+    Body,
+    LttpResponseHandler,
+]
+export type LttpRequestCallback = (...args: [...LttpRequestEvent]) => void;
+
 
 const tcp_listeners: {
     [port: number]: null | ((
@@ -33,7 +45,7 @@ function getPort(args: TcpEventArgs) {
     return -1;
 }
 
-export function listen(port: Port, timeout: number = 5): void {
+export function listen(port: Port, callback: LttpRequestCallback, timeout: number = 5): void {
     if(tcp_listeners[port] != undefined) {
         throw "Port already bound";
     }
@@ -60,7 +72,7 @@ export function listen(port: Port, timeout: number = 5): void {
                 const document = args[2];
                 const address = args[3];
 
-                const respond = (status: number, headers?: Headers, body?: Body) => {
+                const respond: LttpResponseHandler = (status: number, headers?: Headers, body?: Body) => {
                     network.tcp.send(
                         channel,
                         serialization.serialize({
@@ -90,15 +102,14 @@ export function listen(port: Port, timeout: number = 5): void {
                     return;
                 }
 
-                computer.pushSignal(
-                    "lttp_request",
+                callback(
                     channel,
                     address,
                     port,
                     headers || {},
                     body,
                     respond,
-                )
+                );
             }
         }
     }
