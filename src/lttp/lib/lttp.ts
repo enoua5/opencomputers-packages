@@ -12,6 +12,8 @@ type TcpEventArgs = TcpOpenArgs | TcpCloseArgs | TcpMessageArgs;
 export type Channel = number;
 export type Address = string;
 export type Port = number;
+export type Method = "GET" | "PUT" | "POST" | "DELETE" | "PATCH" | "HEAD" | "OPTIONS";
+export type Path = string;
 export type Headers = { [key: string]: string };
 export type Body = string | null;
 export type Status = number;
@@ -20,6 +22,8 @@ export type LttpRequestEvent = [
     Channel,
     Address, // origin address
     Port,
+    Method,
+    Path,
     Headers,
     Body,
     LttpResponseHandler,
@@ -85,10 +89,18 @@ export function listen(port: Port, callback: LttpRequestCallback, timeout: numbe
 
                 let headers: Headers | null = null;
                 let body: Body = null;
+                let method: string | null = null;
+                let path: Path | null = null;
 
                 try {
                     const document_data = serialization.unserialize(document);
                     if(typeof document_data === "object") {
+                        if(typeof document_data.method === "string") {
+                            method = document_data.method;
+                        }
+                        if(typeof document_data.path === "string") {
+                            path = document_data.path;
+                        }
                         if(typeof document_data.headers === "object") {
                             headers = document_data.headers;
                         }
@@ -98,7 +110,22 @@ export function listen(port: Port, callback: LttpRequestCallback, timeout: numbe
                     }
                 }
                 catch {
-                    respond(422);
+                    respond(555);
+                    return;
+                }
+                if(
+                    path == null ||
+                    !(
+                        method == "GET" ||
+                        method == "PUT" ||
+                        method == "POST" ||
+                        method == "DELETE" ||
+                        method == "PATCH" ||
+                        method == "HEAD" ||
+                        method == "OPTIONS"
+                    )
+                ) {
+                    respond(555);
                     return;
                 }
 
@@ -106,6 +133,8 @@ export function listen(port: Port, callback: LttpRequestCallback, timeout: numbe
                     channel,
                     address,
                     port,
+                    method,
+                    path,
                     headers || {},
                     body,
                     respond,
@@ -128,6 +157,8 @@ export function unlisten(port: Port): void {
 export function request(
     address: Address,
     port: Port,
+    method: Method,
+    path: Path = "/",
     headers?: Headers,
     body?: Body,
     connection_timeout: number = 5,
@@ -137,6 +168,8 @@ export function request(
     Headers,
     Body,
 ]> {
+    method = string.upper(method) as Method;
+
     const [request_id] = string.gsub(uuid.next(), "-", "");
     let channel: number | null = null;
 
@@ -171,6 +204,8 @@ export function request(
         throw "connection timeout";
     }
     network.tcp.send(channel, serialization.serialize({
+        method,
+        path,
         headers,
         body,
     }));

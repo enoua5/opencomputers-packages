@@ -49,14 +49,22 @@ function ____exports.listen(port, callback, timeout)
                 end
                 local headers = nil
                 local body = nil
+                local method = nil
+                local path = nil
                 do
                     local function ____catch()
-                        respond(422)
+                        respond(555)
                         return true
                     end
                     local ____try, ____hasReturned, ____returnValue = pcall(function()
                         local document_data = serialization.unserialize(document)
                         if type(document_data) == "table" then
+                            if type(document_data.method) == "string" then
+                                method = document_data.method
+                            end
+                            if type(document_data.path) == "string" then
+                                path = document_data.path
+                            end
                             if type(document_data.headers) == "table" then
                                 headers = document_data.headers
                             end
@@ -72,10 +80,16 @@ function ____exports.listen(port, callback, timeout)
                         return ____returnValue
                     end
                 end
+                if path == nil or not (method == "GET" or method == "PUT" or method == "POST" or method == "DELETE" or method == "PATCH" or method == "HEAD" or method == "OPTIONS") then
+                    respond(555)
+                    return
+                end
                 callback(
                     channel,
                     address,
                     port,
+                    method,
+                    path,
                     headers or ({}),
                     body,
                     respond
@@ -93,13 +107,17 @@ function ____exports.unlisten(port)
     end
     network.tcp.unlisten(port)
 end
-function ____exports.request(address, port, headers, body, connection_timeout, response_timeout)
+function ____exports.request(address, port, method, path, headers, body, connection_timeout, response_timeout)
+    if path == nil then
+        path = "/"
+    end
     if connection_timeout == nil then
         connection_timeout = 5
     end
     if response_timeout == nil then
         response_timeout = 5
     end
+    method = string.upper(method)
     local request_id = string.gsub(
         uuid.next(),
         "-",
@@ -136,7 +154,7 @@ function ____exports.request(address, port, headers, body, connection_timeout, r
     end
     network.tcp.send(
         channel,
-        serialization.serialize({headers = headers, body = body})
+        serialization.serialize({method = method, path = path, headers = headers, body = body})
     )
     event.pull(response_timeout, "message" .. request_id)
     if response == nil then

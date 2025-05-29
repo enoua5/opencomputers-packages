@@ -2,6 +2,8 @@
 export type Channel = number;
 export type Address = string;
 export type Port = number;
+export type Method = "GET" | "PUT" | "POST" | "DELETE" | "PATCH" | "HEAD" | "OPTIONS";
+export type Path = string;
 export type Headers = { [key: string]: string };
 export type Body = string | null;
 export type Status = number;
@@ -10,6 +12,8 @@ export type LttpRequestEvent = [
     Channel,
     Address, // origin address
     Port,
+    Method,
+    Path,
     Headers,
     Body,
     LttpResponseHandler,
@@ -21,6 +25,8 @@ declare module "lttp" {
     export const request: (
         address: Address,
         port: Port,
+        method: Method,
+        path?: Path,
         headers?: Headers,
         body?: Body,
         connection_timeout?: number,
