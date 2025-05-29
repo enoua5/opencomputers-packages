@@ -13,7 +13,7 @@ local function getPort(args)
     end
     return -1
 end
-function ____exports.listen(port, timeout)
+function ____exports.listen(port, callback, timeout)
     if timeout == nil then
         timeout = 5
     end
@@ -72,8 +72,7 @@ function ____exports.listen(port, timeout)
                         return ____returnValue
                     end
                 end
-                computer.pushSignal(
-                    "lttp_request",
+                callback(
                     channel,
                     address,
                     port,
@@ -150,15 +149,16 @@ function ____exports.request(address, port, headers, body, connection_timeout, r
     local status = 500
     local response_headers = {}
     local response_body = nil
-    if type(response) == "table" then
-        if type(response.status) == "number" then
-            status = response.status
+    local response_data = serialization.unserialize(response)
+    if type(response_data) == "table" then
+        if type(response_data.status) == "number" then
+            status = response_data.status
         end
-        if type(response.headers) == "table" then
-            response_headers = response.headers
+        if type(response_data.headers) == "table" then
+            response_headers = response_data.headers
         end
-        if type(response.body) == "string" then
-            response_body = response.body
+        if type(response_data.body) == "string" then
+            response_body = response_data.body
         end
     end
     if channel_open then

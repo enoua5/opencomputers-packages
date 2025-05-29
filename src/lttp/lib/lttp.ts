@@ -141,7 +141,7 @@ export function request(
     let channel: number | null = null;
 
     let channel_open = false;
-    let response: string | null = null;
+    let response: string | null = null as string | null;
 
     const handler = (name: string, ...args: [...TcpEventArgs]) => {
         const [action, actual_channel] = args;
@@ -187,16 +187,17 @@ export function request(
     let response_headers: Headers = {};
     let response_body: Body = null;
 
-    if(typeof response == "object") {
-        type ItsNotNever = { [key: string]: unknown };
-        if(typeof (response as ItsNotNever).status === "number") {
-            status = (response as ItsNotNever).status as number;
+    const response_data = serialization.unserialize(response);
+
+    if(typeof response_data == "object") {
+        if(typeof response_data.status === "number") {
+            status = response_data.status as number;
         }
-        if(typeof (response as ItsNotNever).headers === "object") {
-            response_headers = (response as ItsNotNever).headers as Headers;
+        if(typeof response_data.headers === "object") {
+            response_headers = response_data.headers as Headers;
         }
-        if(typeof (response as ItsNotNever).body === "string") {
-            response_body = (response as ItsNotNever).body as Body;
+        if(typeof response_data.body === "string") {
+            response_body = response_data.body as string;
         }
     }
 
