@@ -101,7 +101,11 @@ function ____exports.request(address, port, headers, body, connection_timeout, r
     if response_timeout == nil then
         response_timeout = 5
     end
-    local request_id = uuid.next()
+    local request_id = string.gsub(
+        uuid.next(),
+        "-",
+        ""
+    )
     local channel = nil
     local channel_open = false
     local response = nil

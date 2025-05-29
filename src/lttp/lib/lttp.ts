@@ -126,7 +126,7 @@ export function request(
     Headers,
     Body,
 ]> {
-    const request_id = uuid.next();
+    const [request_id] = string.gsub(uuid.next(), "-", "");
     let channel: number | null = null;
 
     let channel_open = false;
