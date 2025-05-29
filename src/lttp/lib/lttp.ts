@@ -16,11 +16,11 @@ type TcpMessageArgs = ["message", Channel, string, Address, Port];
 type TcpEventArgs = TcpOpenArgs | TcpCloseArgs | TcpMessageArgs;
 
 const tcp_listeners: {
-    [port: number]: (
+    [port: number]: null | ((
         this: void,
         name: string,
         ...args: [...TcpEventArgs]
-    ) => void
+    ) => void)
 } = {};
 
 function getPort(args: TcpEventArgs) {
@@ -105,8 +105,9 @@ export function listen(port: Port, timeout: number = 5): void {
 }
 
 export function unlisten(port: Port): void {
-    if(tcp_listeners[port] != undefined) {
+    if(tcp_listeners[port] != null) {
         event.ignore("tcp", tcp_listeners[port]);
+        tcp_listeners[port] = null;
     }
     network.tcp.unlisten(port);
 }
@@ -159,7 +160,7 @@ export function request(
     network.tcp.send(channel, serialization.serialize({
         headers,
         body,
-    }))
+    }));
     event.pull(response_timeout, "message" + request_id);
     if(response == null) {
         if(channel_open) {
