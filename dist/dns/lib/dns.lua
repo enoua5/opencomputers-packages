@@ -2,8 +2,7 @@ local ____exports = {}
 local filesystem = require("filesystem")
 local component = require("component")
 local event = require("event")
-local network = require("network")
-local uuid = require("uuid")
+local lttp = require("lttp")
 local DNS_ADDRESS_FILE = "/etc/dns.address"
 local DNS_PORT = 53
 local DNS_AD_PORT = 54
@@ -11,7 +10,7 @@ local DNS_AD_RESPONSE_PORT = 55
 --- Return the set address for DNS, or throw an error if not set
 function ____exports.getServerAddress()
     if not filesystem.exists(DNS_ADDRESS_FILE) then
-        error("Address of DNS server not set. Please run `dns set-server NETWORK_ADDRESS`.", 0)
+        error("Address of DNS server not set. Please run `dns setup`.", 0)
     end
     local file = io.open(DNS_ADDRESS_FILE, "r")
     if file == nil then
@@ -61,110 +60,79 @@ function ____exports.searchServers(timeout)
     end
     return server_list
 end
-function ____exports.register(name, timeout)
-    if timeout == nil then
-        timeout = 5
+function ____exports.register(name, connection_timeout, response_timeout)
+    if connection_timeout == nil then
+        connection_timeout = 5
+    end
+    if response_timeout == nil then
+        response_timeout = 5
+    end
+    if name == "" then
+        error("invalid name", 0)
     end
     local server_address = ____exports.getServerAddress()
-    local channel = network.tcp.open(server_address, DNS_PORT)
-    local request_id = uuid.next()
-    local open = true
-    local status = nil
-    local function handleResponse(name, ...)
-        local args = {...}
-        local event_type, on_channel = table.unpack(args)
-        if on_channel == channel then
-            if event_type == "close" then
-                open = false
-                event.push(request_id)
-            elseif event_type == "message" then
-                local message = args[3]
-                status = message
-                event.push(request_id)
-            end
-        end
-    end
-    event.listen("tcp", handleResponse)
-    network.tcp.send(channel, "register " .. name)
-    event.pull(timeout, request_id)
-    event.ignore("tcp", handleResponse)
-    if open then
-        network.tcp.close(channel)
-    end
-    if status == "granted" then
+    local status = lttp.request(
+        server_address,
+        DNS_PORT,
+        "POST",
+        "/" .. name,
+        {},
+        nil,
+        connection_timeout,
+        response_timeout
+    )
+    if status == 200 then
         return true
     end
-    error(status or "timeout", 0)
+    return false
 end
-function ____exports.unregister(name, timeout)
-    if timeout == nil then
-        timeout = 5
+function ____exports.unregister(name, connection_timeout, response_timeout)
+    if connection_timeout == nil then
+        connection_timeout = 5
+    end
+    if name == "" then
+        error("invalid name", 0)
     end
     local server_address = ____exports.getServerAddress()
-    local channel = network.tcp.open(server_address, DNS_PORT)
-    local request_id = uuid.next()
-    local open = true
-    local status = nil
-    local function handleResponse(name, ...)
-        local args = {...}
-        local event_type, on_channel = table.unpack(args)
-        if on_channel == channel then
-            if event_type == "close" then
-                open = false
-                event.push(request_id)
-            elseif event_type == "message" then
-                local message = args[3]
-                status = message
-                event.push(request_id)
-            end
-        end
-    end
-    event.listen("tcp", handleResponse)
-    network.tcp.send(channel, "unregister " .. name)
-    event.pull(timeout, request_id)
-    event.ignore("tcp", handleResponse)
-    if open then
-        network.tcp.close(channel)
-    end
-    if status == "ok" then
+    local status = lttp.request(
+        server_address,
+        DNS_PORT,
+        "DELETE",
+        "/" .. name,
+        {},
+        nil,
+        connection_timeout,
+        response_timeout
+    )
+    if status == 200 then
         return true
     end
-    error(status or "timeout", 0)
+    return false
 end
-function ____exports.resolve(name, timeout)
-    if timeout == nil then
-        timeout = 5
+function ____exports.resolve(name, connection_timeout, response_timeout)
+    if connection_timeout == nil then
+        connection_timeout = 5
+    end
+    if response_timeout == nil then
+        response_timeout = 5
+    end
+    if name == "" then
+        error("invalid name", 0)
     end
     local server_address = ____exports.getServerAddress()
-    local channel = network.tcp.open(server_address, DNS_PORT)
-    local request_id = uuid.next()
-    local open = true
-    local status = nil
-    local function handleResponse(name, ...)
-        local args = {...}
-        local event_type, on_channel = table.unpack(args)
-        if on_channel == channel then
-            if event_type == "close" then
-                open = false
-                event.push(request_id)
-            elseif event_type == "message" then
-                local message = args[3]
-                status = message
-                event.push(request_id)
-            end
-        end
+    local status, _, body = lttp.request(
+        server_address,
+        DNS_PORT,
+        "GET",
+        "/" .. name,
+        {},
+        nil,
+        connection_timeout,
+        response_timeout
+    )
+    if status ~= 200 or body == nil or body == "" then
+        error("could not resolve", 0)
     end
-    event.listen("tcp", handleResponse)
-    network.tcp.send(channel, "resolve " .. name)
-    event.pull(timeout, request_id)
-    event.ignore("tcp", handleResponse)
-    if open then
-        network.tcp.close(channel)
-    end
-    if status ~= nil and string.gmatch(status, "^address ") then
-        local address = string.gsub(status, "^address ", "")
-        return address
-    end
-    error(status or "timeout", 0)
+    return body
 end
 return ____exports
