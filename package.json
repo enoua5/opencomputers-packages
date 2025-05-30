@@ -4,15 +4,17 @@
   "description": "These packages are meant to be downloaded to a central packages server",
   "scripts": {
     "build": "tstl",
-    "watch": "tstl --watch"
+    "watch": "tstl --watch",
+    "format": "prettier --write src ./*.d.ts"
   },
   "keywords": [],
   "author": "enoua5",
   "license": "ISC",
   "type": "commonjs",
   "devDependencies": {
-    "@opct/openos": "^0.1.5",
     "@opct/gui": "^0.1.5",
+    "@opct/openos": "^0.1.5",
+    "prettier": "^3.5.3",
     "typescript-to-lua": "^1.31.0"
   }
 }

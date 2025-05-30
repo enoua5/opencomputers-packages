@@ -1,18 +1,16 @@
-
 /*
  * EVENTS
  *
  * icmp.ping => * => "ping_reply", origin, id, payload
- * 
+ *
  * udp.send => "datagram", origin, port, data
- * 
+ *
  * tcp.open => "tcp", "connection", channel, origin, port
  * tcp.open => reject => x
  * tcp.open => accept => "tcp", "connection", channel origin, port
  * tcp.close => "tcp", "close", channel, origin, port
  * tcp.message => "tcp", "message", channel, message, address, port
  */
-
 
 declare module "network" {
     export const icmp: {
@@ -21,7 +19,7 @@ declare module "network" {
          * 'ping_reply' event
          */
         ping(this: void, addr: string, payload: string): number;
-    }
+    };
     export const ip: {
         /**
          * Attaches addnitional address to this computer, useful for
@@ -29,12 +27,12 @@ declare module "network" {
          * Address SOULD be up to 64 characters, allowed characters: a-zA-Z, '-'
          */
         bind(this: void, addr: string): void;
-    }
+    };
     export const udp: {
         /**
          * Starts listening on specified port, when data arrives at port "datagram"
          * event is triggered with origin, port, data parameters
-         * 
+         *
          */
         open(this: void, port: number): void;
         /** Stops listening on specified port */
@@ -44,7 +42,7 @@ declare module "network" {
          * on remote machine
          */
         send(this: void, addr: string, port: number, data: string): void;
-    }
+    };
     export const tcp: {
         /**
          * Starts listening at specified port. When connection arrives event
@@ -75,5 +73,5 @@ declare module "network" {
          * event on remote side
          */
         send(this: void, channel: number, data: string): boolean;
-    }
+    };
 }
