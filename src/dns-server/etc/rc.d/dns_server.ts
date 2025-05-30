@@ -2,6 +2,7 @@
 import * as network from "network";
 import * as event from "event";
 import * as component from "component";
+import * as lttp from "lttp";
 import { serialize, unserialize } from "serialization";
 
 const DNS_PORT = 53;
@@ -24,96 +25,77 @@ const ad = {
     },
 }
 
-type Channel = number;
-type Address = string;
-type Port = number;
-type TcpOpenArgs = ["connection", Channel, Address, Port];
-type TcpCloseArgs = ["close", Channel, Address, Port];
-type TcpMessageArgs = ["message", Channel, string, Address, Port];
-type TcpEventArgs = TcpOpenArgs | TcpCloseArgs | TcpMessageArgs;
-
 let names: { [key: string]: string | undefined } = {};
 
-const dns = {
-    timeouts: {} as { [key: Channel]: number | null },
+const dns: {
+    handleRequest: LttpRequestCallback;
+    start: () => void;
+    stop: () => void;
+} = {
+    handleRequest(
+        this: void,
+        channel: Channel,
+        address: Address,
+        port: Port,
+        method: Method,
+        path: Path,
+        headers: Headers,
+        body: Body,
+        respond: LttpResponseHandler
+    ) {
+        const resource = string.sub(path, 2);
 
-    handleConnection(this: void, channel: Channel, address: Address, port: Port) {
-        dns.timeouts[channel] = event.timer(5, () => network.tcp.close(channel));
-    },
-    handleClose(this: void, channel: Channel, address: Address, port: Port) {
-        if(dns.timeouts[channel] != null) {
-            event.cancel(dns.timeouts[channel]);
-            dns.timeouts[channel] = null;
+        if(resource == "") {
+            respond(422);
+            return;
         }
-    },
-    handleMessage(this: void, channel: Channel, message: string, address: Address, port: Port) {
-        const request: string[] = [];
-        for(const [part] of string.gmatch(message, "[^%s]+")) {
-            request.push(part);
-        }
 
-        const command = request[0];
-
-        if(command === "register") {
-            const name = request[1];
-            if(name == null) {
-                network.tcp.send(channel, "invalid");
-            }
-            else if(names[name] != null) {
-                network.tcp.send(channel, "taken");
+        if(method === "POST") {
+            if(names[resource] != null) {
+                respond(409);
+                return;
             }
             else{
-                names[name] = address;
-                network.tcp.send(channel, "granted");
+                names[resource] = address;
+                respond(200);
+                return;
             }
         }
-        else if(command === "unregister") {
-            const name = request[1];
-            if(name && names[name] === address) {
-                names[name] = undefined;
-                network.tcp.send(channel, "ok");
+        else if(method === "DELETE") {
+            if(names[resource] == null) {
+                respond(404);
+                return;
+            }
+            else if(names[resource] === address) {
+                names[resource] = undefined;
+                respond(200);
+                return;
             }
             else {
-                network.tcp.send(channel, "unknown");
+                respond(403);
+                return;
             }
         }
-        else if(command == "resolve") {
-            const name = request[1];
-            if(name == null) {
-                network.tcp.send(channel, "invalid");
-            }
-            else if(names[name] != null) {
-                network.tcp.send(channel, "address " + names[name]);
+        else if(method === "GET") {
+            if(names[resource] != null) {
+                respond(200, {}, names[resource]);
+                return;
             }
             else {
-                network.tcp.send(channel, "unknown");
+                respond(404);
+                return;
             }
         }
         else {
-            network.tcp.send(channel, "invalid");
-        }
-
-        network.tcp.close(channel);
-    },
-    handle(this: void, name: string, ...args: [...TcpEventArgs]) {
-        const [method, channel] = args;
-        if(method === "connection") {
-            dns.handleConnection(channel, args[2], args[3]);
-        }
-        else if(method === "close") {
-            dns.handleClose(channel, args[2], args[3]);
-        }
-        else if(method === "message") {
-            dns.handleMessage(channel, args[2], args[3], args[4]);
+            respond(405);
+            return;
         }
     },
     start() {
-        event.listen<TcpEventArgs>("tcp", this.handle);
-        network.tcp.listen(DNS_PORT);
+        lttp.listen(DNS_PORT, dns.handleRequest);
     },
     stop() {
-        network.tcp.unlisten(DNS_PORT);
-        event.ignore("tcp", this.handle);
+        lttp.unlisten(DNS_PORT);
     },
 }
 
