@@ -23,6 +23,7 @@
         "noResolvePaths": [
             "dns",
             "network",
+            "lttp",
         ]
     }
 }

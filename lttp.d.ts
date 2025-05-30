@@ -1,14 +1,14 @@
 
-export type Channel = number;
-export type Address = string;
-export type Port = number;
-export type Method = "GET" | "PUT" | "POST" | "DELETE" | "PATCH" | "HEAD" | "OPTIONS";
-export type Path = string;
-export type Headers = { [key: string]: string };
-export type Body = string | null;
-export type Status = number;
-export type LttpResponseHandler = (status: Status, headers?: Headers, body?: Body) => void;
-export type LttpRequestEvent = [
+declare type Channel = number;
+declare type Address = string;
+declare type Port = number;
+declare type Method = "GET" | "PUT" | "POST" | "DELETE" | "PATCH" | "HEAD" | "OPTIONS";
+declare type Path = string;
+declare type Headers = { [key: string]: string };
+declare type Body = string | null;
+declare type Status = number;
+declare type LttpResponseHandler = (status: Status, headers?: Headers, body?: Body) => void;
+declare type LttpRequestEvent = [
     Channel,
     Address, // origin address
     Port,
@@ -18,7 +18,7 @@ export type LttpRequestEvent = [
     Body,
     LttpResponseHandler,
 ];
-export type LttpRequestCallback = (...args: [...LttpRequestEvent]) => void;
+declare type LttpRequestCallback = (...args: [...LttpRequestEvent]) => void;
 
 declare module "lttp" {
     export const listen: (port: number, callback: LttpRequestCallback, timeout?: number) => void;
