@@ -1,4 +1,4 @@
-import * as network from "network";
+
 import * as event from "event";
 import * as component from "component";
 import * as lttp from "lttp";

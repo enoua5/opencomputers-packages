@@ -1,7 +1,7 @@
 local ____exports = {}
-local network = require("network")
 local event = require("event")
 local component = require("component")
+local lttp = require("lttp")
 local ____serialization = require("serialization")
 local serialize = ____serialization.serialize
 local unserialize = ____serialization.unserialize
@@ -27,75 +27,51 @@ local ad = {
 local names = {}
 local dns
 dns = {
-    timeouts = {},
-    handleConnection = function(channel, address, port)
-        dns.timeouts[channel] = event.timer(
-            5,
-            function() return network.tcp.close(channel) end
-        )
-    end,
-    handleClose = function(channel, address, port)
-        if dns.timeouts[channel] ~= nil then
-            event.cancel(dns.timeouts[channel])
-            dns.timeouts[channel] = nil
+    handleRequest = function(channel, address, port, method, path, headers, body, respond)
+        local resource = string.sub(path, 2)
+        if resource == "" then
+            respond(422)
+            return
         end
-    end,
-    handleMessage = function(channel, message, address, port)
-        local request = {}
-        for part in string.gmatch(message, "[^%s]+") do
-            request[#request + 1] = part
-        end
-        local command = request[1]
-        if command == "register" then
-            local name = request[2]
-            if name == nil then
-                network.tcp.send(channel, "invalid")
-            elseif names[name] ~= nil then
-                network.tcp.send(channel, "taken")
+        if method == "POST" then
+            if names[resource] ~= nil then
+                respond(409)
+                return
             else
-                names[name] = address
-                network.tcp.send(channel, "granted")
+                names[resource] = address
+                respond(200)
+                return
             end
-        elseif command == "unregister" then
-            local name = request[2]
-            if name and names[name] == address then
-                names[name] = nil
-                network.tcp.send(channel, "ok")
+        elseif method == "DELETE" then
+            if names[resource] == nil then
+                respond(404)
+                return
+            elseif names[resource] == address then
+                names[resource] = nil
+                respond(200)
+                return
             else
-                network.tcp.send(channel, "unknown")
+                respond(403)
+                return
             end
-        elseif command == "resolve" then
-            local name = request[2]
-            if name == nil then
-                network.tcp.send(channel, "invalid")
-            elseif names[name] ~= nil then
-                network.tcp.send(channel, "address " .. names[name])
+        elseif method == "GET" then
+            if names[resource] ~= nil then
+                respond(200, {}, names[resource])
+                return
             else
-                network.tcp.send(channel, "unknown")
+                respond(404)
+                return
             end
         else
-            network.tcp.send(channel, "invalid")
-        end
-        network.tcp.close(channel)
-    end,
-    handle = function(name, ...)
-        local args = {...}
-        local method, channel = table.unpack(args)
-        if method == "connection" then
-            dns.handleConnection(channel, args[3], args[4])
-        elseif method == "close" then
-            dns.handleClose(channel, args[3], args[4])
-        elseif method == "message" then
-            dns.handleMessage(channel, args[3], args[4], args[5])
+            respond(405)
+            return
         end
     end,
     start = function(self)
-        event.listen("tcp", self.handle)
-        network.tcp.listen(DNS_PORT)
+        lttp.listen(DNS_PORT, dns.handleRequest)
     end,
     stop = function(self)
-        network.tcp.unlisten(DNS_PORT)
-        event.ignore("tcp", self.handle)
+        lttp.unlisten(DNS_PORT)
     end
 }
 local function save()
