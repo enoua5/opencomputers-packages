@@ -13,16 +13,16 @@ const DNS_AD_RESPONSE_PORT = 55;
 
 /** Return the set address for DNS, or throw an error if not set */
 export function getServerAddress(): string {
-    if(!filesystem.exists(DNS_ADDRESS_FILE)) {
+    if (!filesystem.exists(DNS_ADDRESS_FILE)) {
         throw "Address of DNS server not set. Please run `dns set-server NETWORK_ADDRESS`.";
     }
     const [file] = io.open(DNS_ADDRESS_FILE, "r");
-    if(file == null) {
+    if (file == null) {
         throw "Failed to read " + DNS_ADDRESS_FILE;
     }
     const file_length = filesystem.size(DNS_ADDRESS_FILE);
     const file_data = file.read(file_length);
-    if(file_data == null || file_data === "") {
+    if (file_data == null || file_data === "") {
         throw "Failed to read " + DNS_ADDRESS_FILE;
     }
     file.close();
@@ -33,7 +33,7 @@ export function getServerAddress(): string {
 /** Set the DNS server address */
 export function setServerAddress(address: string): void {
     const [file] = io.open(DNS_ADDRESS_FILE, "w");
-    if(file == null) {
+    if (file == null) {
         throw "Failed to write to " + DNS_ADDRESS_FILE;
     }
     file.write(address);
@@ -42,11 +42,11 @@ export function setServerAddress(address: string): void {
 
 /**
  * Search for DNS servers for `timeout` seconds, and return the list
- * 
+ *
  * WARNING: This method is not "thread safe". It will open and close port 55
  */
 export function searchServers(timeout: number = 5): string[] {
-    component.modem.open(DNS_AD_RESPONSE_PORT)
+    component.modem.open(DNS_AD_RESPONSE_PORT);
     const servers_found: { [key: string]: boolean } = {};
     const handleDnsAd: event.EventHandler<OC.EventMap["modem_message"]> = (
         name: string,
@@ -56,7 +56,11 @@ export function searchServers(timeout: number = 5): string[] {
         distance: number,
         ...payload: OC.Components.ModemData[]
     ) => {
-        if(port == DNS_AD_RESPONSE_PORT && payload.length > 0 && payload[0] == "dns-ad") {
+        if (
+            port == DNS_AD_RESPONSE_PORT &&
+            payload.length > 0 &&
+            payload[0] == "dns-ad"
+        ) {
             servers_found[senderAddress] = true;
         }
     };
@@ -65,8 +69,8 @@ export function searchServers(timeout: number = 5): string[] {
     os.sleep(timeout);
     component.modem.close(DNS_AD_RESPONSE_PORT);
     event.ignore("modem_message", handleDnsAd);
-    const server_list: string[] = []
-    for(const [k, v] of pairs(servers_found)) {
+    const server_list: string[] = [];
+    for (const [k, v] of pairs(servers_found)) {
         server_list.push(k as string);
     }
     return server_list;
@@ -88,14 +92,16 @@ export function register(name: string, timeout: number = 5) {
     let open = true;
     let status: string | null = null;
 
-    const handleResponse: event.EventHandler<TcpEventArgs> = (name: string, ...args) => {
+    const handleResponse: event.EventHandler<TcpEventArgs> = (
+        name: string,
+        ...args
+    ) => {
         const [event_type, on_channel] = args;
-        if(on_channel === channel) {
-            if(event_type === "close") {
+        if (on_channel === channel) {
+            if (event_type === "close") {
                 open = false;
                 event.push(request_id);
-            }
-            else if(event_type === "message") {
+            } else if (event_type === "message") {
                 const message = args[2];
                 status = message;
                 event.push(request_id);
@@ -107,11 +113,11 @@ export function register(name: string, timeout: number = 5) {
     network.tcp.send(channel, "register " + name);
     event.pull(timeout, request_id);
     event.ignore("tcp", handleResponse);
-    if(open) {
+    if (open) {
         network.tcp.close(channel);
     }
 
-    if(status === "granted") {
+    if (status === "granted") {
         return true;
     }
     throw status || "timeout";
@@ -125,14 +131,16 @@ export function unregister(name: string, timeout: number = 5) {
     let open = true;
     let status: string | null = null;
 
-    const handleResponse: event.EventHandler<TcpEventArgs> = (name: string, ...args) => {
+    const handleResponse: event.EventHandler<TcpEventArgs> = (
+        name: string,
+        ...args
+    ) => {
         const [event_type, on_channel] = args;
-        if(on_channel === channel) {
-            if(event_type === "close") {
+        if (on_channel === channel) {
+            if (event_type === "close") {
                 open = false;
                 event.push(request_id);
-            }
-            else if(event_type === "message") {
+            } else if (event_type === "message") {
                 const message = args[2];
                 status = message;
                 event.push(request_id);
@@ -144,11 +152,11 @@ export function unregister(name: string, timeout: number = 5) {
     network.tcp.send(channel, "unregister " + name);
     event.pull(timeout, request_id);
     event.ignore("tcp", handleResponse);
-    if(open) {
+    if (open) {
         network.tcp.close(channel);
     }
 
-    if(status === "ok") {
+    if (status === "ok") {
         return true;
     }
     throw status || "timeout";
@@ -162,14 +170,16 @@ export function resolve(name: string, timeout: number = 5) {
     let open = true;
     let status: string | null = null;
 
-    const handleResponse: event.EventHandler<TcpEventArgs> = (name: string, ...args) => {
+    const handleResponse: event.EventHandler<TcpEventArgs> = (
+        name: string,
+        ...args
+    ) => {
         const [event_type, on_channel] = args;
-        if(on_channel === channel) {
-            if(event_type === "close") {
+        if (on_channel === channel) {
+            if (event_type === "close") {
                 open = false;
                 event.push(request_id);
-            }
-            else if(event_type === "message") {
+            } else if (event_type === "message") {
                 const message = args[2];
                 status = message;
                 event.push(request_id);
@@ -181,11 +191,11 @@ export function resolve(name: string, timeout: number = 5) {
     network.tcp.send(channel, "resolve " + name);
     event.pull(timeout, request_id);
     event.ignore("tcp", handleResponse);
-    if(open) {
+    if (open) {
         network.tcp.close(channel);
     }
 
-    if(status != null && string.gmatch(status, "^address ")) {
+    if (status != null && string.gmatch(status, "^address ")) {
         const [address] = string.gsub(status as string, "^address ", "");
         return address;
     }

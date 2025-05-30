@@ -1,4 +1,3 @@
-
 import * as network from "network";
 import * as event from "event";
 import * as component from "component";
@@ -10,8 +9,20 @@ const DNS_AD_PORT = 54;
 const DNS_AD_RESPONSE_PORT = 55;
 
 const ad = {
-    handle(this: void, name: string, receiverAddress: string, senderAddress: string, port: number, distance: number, ...payload: unknown[]) {
-        if(port === DNS_AD_PORT && payload.length > 0 && payload[0] == "dns-search") {
+    handle(
+        this: void,
+        name: string,
+        receiverAddress: string,
+        senderAddress: string,
+        port: number,
+        distance: number,
+        ...payload: unknown[]
+    ) {
+        if (
+            port === DNS_AD_PORT &&
+            payload.length > 0 &&
+            payload[0] == "dns-search"
+        ) {
             component.modem.send(senderAddress, DNS_AD_RESPONSE_PORT, "dns-ad");
         }
     },
@@ -23,7 +34,7 @@ const ad = {
         component.modem.close(DNS_AD_PORT);
         event.ignore("modem_message", this.handle);
     },
-}
+};
 
 let names: { [key: string]: string | undefined } = {};
 
@@ -45,48 +56,41 @@ const dns: {
     ) {
         const resource = string.sub(path, 2);
 
-        if(resource == "") {
+        if (resource == "") {
             respond(422);
             return;
         }
 
-        if(method === "POST") {
-            if(names[resource] != null) {
+        if (method === "POST") {
+            if (names[resource] != null) {
                 respond(409);
                 return;
-            }
-            else{
+            } else {
                 names[resource] = address;
                 respond(200);
                 return;
             }
-        }
-        else if(method === "DELETE") {
-            if(names[resource] == null) {
+        } else if (method === "DELETE") {
+            if (names[resource] == null) {
                 respond(404);
                 return;
-            }
-            else if(names[resource] === address) {
+            } else if (names[resource] === address) {
                 names[resource] = undefined;
                 respond(200);
                 return;
-            }
-            else {
+            } else {
                 respond(403);
                 return;
             }
-        }
-        else if(method === "GET") {
-            if(names[resource] != null) {
+        } else if (method === "GET") {
+            if (names[resource] != null) {
                 respond(200, {}, names[resource]);
                 return;
-            }
-            else {
+            } else {
                 respond(404);
                 return;
             }
-        }
-        else {
+        } else {
             respond(405);
             return;
         }
@@ -97,11 +101,11 @@ const dns: {
     stop() {
         lttp.unlisten(DNS_PORT);
     },
-}
+};
 
 function save() {
     const [file] = io.open("/etc/dns-names", "w");
-    if(file != null) {
+    if (file != null) {
         file.write(serialize(names));
         file.close();
     }
@@ -109,11 +113,11 @@ function save() {
 
 function load() {
     const [file] = io.open("/etc/dns-names", "r");
-    if(file != null) {
+    if (file != null) {
         const data = file.read();
-        if(data != null) {
+        if (data != null) {
             const value = unserialize(data);
-            if(typeof value == "object" && value != null) {
+            if (typeof value == "object" && value != null) {
                 names = value;
             }
         }
@@ -127,13 +131,12 @@ start = () => {
     dns.start();
     load();
     save_loop = event.timer(5, save, Infinity);
-}
+};
 
 stop = () => {
     ad.stop();
     dns.stop();
-    if(save_loop != null) {
+    if (save_loop != null) {
         event.cancel(save_loop);
     }
-}
-
+};
