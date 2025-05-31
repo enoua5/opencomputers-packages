@@ -83,8 +83,8 @@ function main() {
         }
         try {
             const [ok, status] = dns.register(args[1]);
-            if(!ok) {
-                if(status == 409) {
+            if (!ok) {
+                if (status == 409) {
                     throw "Domain already registered";
                 }
                 throw "DNS server responded with status " + status;
@@ -101,11 +101,11 @@ function main() {
         }
         try {
             const [ok, status] = dns.unregister(args[1]);
-            if(!ok) {
-                if(status == 404) {
+            if (!ok) {
+                if (status == 404) {
                     throw "Domain not registered";
                 }
-                if(status == 403) {
+                if (status == 403) {
                     throw "Domain belongs to another address";
                 }
                 throw "DNS server responded with status " + status;
