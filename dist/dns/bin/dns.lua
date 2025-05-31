@@ -81,7 +81,16 @@ local function main()
                 print((("Failed to register domain " .. args[2]) .. ": ") .. tostring(e))
             end
             local ____try, ____hasReturned = pcall(function()
-                dns.register(args[2])
+                local ok, status = dns.register(args[2])
+                if not ok then
+                    if status == 409 then
+                        error("Domain already registered", 0)
+                    end
+                    error(
+                        "DNS server responded with status " .. tostring(status),
+                        0
+                    )
+                end
                 print("Registered domain " .. args[2])
             end)
             if not ____try then
@@ -99,7 +108,19 @@ local function main()
                 print((("Failed to unregister domain " .. args[2]) .. ": ") .. tostring(e))
             end
             local ____try, ____hasReturned = pcall(function()
-                dns.register(args[2])
+                local ok, status = dns.unregister(args[2])
+                if not ok then
+                    if status == 404 then
+                        error("Domain not registered", 0)
+                    end
+                    if status == 403 then
+                        error("Domain belongs to another address", 0)
+                    end
+                    error(
+                        "DNS server responded with status " .. tostring(status),
+                        0
+                    )
+                end
                 print("Unregistered domain " .. args[2])
             end)
             if not ____try then

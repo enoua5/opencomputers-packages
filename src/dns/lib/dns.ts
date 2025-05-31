@@ -81,7 +81,7 @@ export function register(
     name: string,
     connection_timeout: number = 5,
     response_timeout: number = 5
-): boolean {
+): LuaMultiReturn<[boolean, number]> {
     if (name == "") {
         throw "invalid name";
     }
@@ -98,17 +98,14 @@ export function register(
         response_timeout
     );
 
-    if (status === 200) {
-        return true;
-    }
-    return false;
+    return $multi(status == 200, status);
 }
 
 export function unregister(
     name: string,
     connection_timeout: number = 5,
     response_timeout?: number
-): boolean {
+): LuaMultiReturn<[boolean, number]> {
     if (name == "") {
         throw "invalid name";
     }
@@ -125,10 +122,7 @@ export function unregister(
         response_timeout
     );
 
-    if (status === 200) {
-        return true;
-    }
-    return false;
+    return $multi(status == 200, status);
 }
 
 export function resolve(

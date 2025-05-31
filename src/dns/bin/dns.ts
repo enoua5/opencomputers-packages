@@ -82,7 +82,13 @@ function main() {
             throw "`dns register` requires exactly 1 argument";
         }
         try {
-            dns.register(args[1]);
+            const [ok, status] = dns.register(args[1]);
+            if(!ok) {
+                if(status == 409) {
+                    throw "Domain already registered";
+                }
+                throw "DNS server responded with status " + status;
+            }
             print("Registered domain " + args[1]);
         } catch (e) {
             print("Failed to register domain " + args[1] + ": " + e);
@@ -94,7 +100,16 @@ function main() {
             throw "`dns unregister` requires exactly 1 argument";
         }
         try {
-            dns.register(args[1]);
+            const [ok, status] = dns.unregister(args[1]);
+            if(!ok) {
+                if(status == 404) {
+                    throw "Domain not registered";
+                }
+                if(status == 403) {
+                    throw "Domain belongs to another address";
+                }
+                throw "DNS server responded with status " + status;
+            }
             print("Unregistered domain " + args[1]);
         } catch (e) {
             print("Failed to unregister domain " + args[1] + ": " + e);

@@ -81,10 +81,7 @@ function ____exports.register(name, connection_timeout, response_timeout)
         connection_timeout,
         response_timeout
     )
-    if status == 200 then
-        return true
-    end
-    return false
+    return status == 200, status
 end
 function ____exports.unregister(name, connection_timeout, response_timeout)
     if connection_timeout == nil then
@@ -104,10 +101,7 @@ function ____exports.unregister(name, connection_timeout, response_timeout)
         connection_timeout,
         response_timeout
     )
-    if status == 200 then
-        return true
-    end
-    return false
+    return status == 200, status
 end
 function ____exports.resolve(name, connection_timeout, response_timeout)
     if connection_timeout == nil then

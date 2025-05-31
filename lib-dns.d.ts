@@ -13,12 +13,12 @@ declare module "dns" {
         name: string,
         connection_timeout?: number,
         response_timeout?: number
-    ): boolean;
+    ): LuaMultiReturn<[boolean, number]>;
     export function unregister(
         name: string,
         connection_timeout?: number,
         response_timeout?: number
-    ): boolean;
+    ): LuaMultiReturn<[boolean, number]>;
     export function resolve(
         name: string,
         connection_timeout?: number,
