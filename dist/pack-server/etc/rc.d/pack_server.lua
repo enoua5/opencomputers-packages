@@ -146,9 +146,15 @@ local function compareVersion(a, b)
         while i <= #a_parts and i <= #b_parts do
             local a_part = tonumber(a_parts[i]) or 0
             local b_part = tonumber(b_parts[i]) or 0
+            if a_part > b_part then
+                return 1
+            elseif b_part > a_part then
+                return -1
+            end
             i = i + 1
         end
     end
+    return 0
 end
 --- Respond with a list of packages for which updates are available
 -- 
@@ -162,6 +168,11 @@ local function handleFetchUpdatesRequest(packages, respond)
             local info = serialization.unserialize(info_file.content)
             if info ~= nil then
                 local version = info.version
+                if type(version) == "string" and type(pack.version) == "string" then
+                    if compareVersion(version, pack.version) > 0 then
+                        updates[#updates + 1] = {pack = pack.pack, version = version}
+                    end
+                end
             end
         end
     end
@@ -222,6 +233,13 @@ start = function()
                 if segments[2] ~= nil and body ~= nil then
                     local page = tonumber(segments[3]) or 0
                     handledownloadRequest(segments[2], body, page, respond)
+                else
+                    respond(400)
+                end
+            elseif method == "GET" and segments[1] == "updates" then
+                if body ~= nil then
+                    local request = serialization.unserialize(body)
+                    handleFetchUpdatesRequest(request, respond)
                 else
                     respond(400)
                 end
