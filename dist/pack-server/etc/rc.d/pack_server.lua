@@ -192,7 +192,7 @@ local function handledownloadRequest(pack, path, page, respond)
     local directory = filesystem.concat("/packages", pack)
     local full_path = filesystem.concat(directory, "install", path)
     local segments = filesystem.segments(full_path)
-    if segments[1] ~= "packages" or segments[2] ~= "install" or segments[3] ~= pack then
+    if segments[1] ~= "packages" or segments[2] ~= pack or segments[3] ~= "install" then
         respond(403)
         return
     end

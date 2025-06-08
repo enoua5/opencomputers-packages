@@ -95,7 +95,9 @@ local function load()
 end
 local save_loop = nil
 register = function(name, address)
-    names[name] = address or component.modem.address
+    local resolved_address = address or component.modem.address
+    names[name] = resolved_address
+    print((("Registered " .. resolved_address) .. " as ") .. name)
 end
 start = function()
     ad:start()
