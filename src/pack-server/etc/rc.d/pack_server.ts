@@ -246,8 +246,8 @@ function handledownloadRequest(
     const segments = filesystem.segments(full_path);
     if (
         segments[0] != "packages" ||
-        segments[1] != "install" ||
-        segments[2] != pack
+        segments[1] != pack ||
+        segments[2] != "install"
     ) {
         respond(403);
         return;
@@ -270,6 +270,7 @@ start = () => {
             const segments = filesystem.segments(path);
             if (method == "GET" && segments[0] == "list") {
                 if (segments[1] != undefined) {
+                    // TODO NOT WORKING
                     handleListPackageRequest(segments[1], respond);
                 } else {
                     handleDirectoryRequest(respond);
