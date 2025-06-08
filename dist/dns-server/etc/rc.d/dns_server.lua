@@ -94,6 +94,9 @@ local function load()
     end
 end
 local save_loop = nil
+register = function(name, address)
+    names[name] = address or component.modem.address
+end
 start = function()
     ad:start()
     dns:start()

@@ -125,6 +125,14 @@ function load() {
 
 let save_loop: number | undefined = undefined;
 
+register = (name: string, address?: string) => {
+    const resolved_address =
+        address || (component.modem as unknown as { address: string }).address;
+    names[name] = resolved_address;
+
+    print("Registered " + resolved_address + " as " + name);
+};
+
 start = () => {
     ad.start();
     dns.start();
