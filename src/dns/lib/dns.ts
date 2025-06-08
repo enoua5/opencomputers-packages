@@ -3,8 +3,6 @@
 import * as filesystem from "filesystem";
 import * as component from "component";
 import * as event from "event";
-import * as network from "network";
-import * as uuid from "uuid";
 import * as lttp from "lttp";
 
 const DNS_ADDRESS_FILE = "/etc/dns.address";

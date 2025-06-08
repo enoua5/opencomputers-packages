@@ -1,0 +1,5 @@
+local filesystem = require("filesystem")
+local rc = require("rc")
+rc.unload("dns_server")
+filesystem.remove("/etc/rc.d/dns_server.lua")
+filesystem.remove("/etc/dns-names")
