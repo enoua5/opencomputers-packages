@@ -1,12 +1,9 @@
+/** type corrections for @opct */
+
 import * as shell from "shell";
+import * as filesystem from "filesystem";
 
 /**
- * CORRECTING A WRONG TYPE
- *
- *
- * This API provides shell related functionality, such as the current working directory,
- * program search path and aliases for the shell.
- * @see https://ocdoc.cil.li/api:shell
  * @noSelf
  * @noResolution
  */
@@ -18,4 +15,15 @@ declare module "shell" {
     function parse(
         ...args: string[]
     ): LuaMultiReturn<[string[], { [key: string]: string | true | null }]>;
+}
+
+/**
+ * @noSelf
+ * @noResolution
+ */
+declare module "filesystem" {
+    /**
+     * Concatenates ~~two~~ zero or more paths.
+     */
+    function concat(...args: string[]): string;
 }
