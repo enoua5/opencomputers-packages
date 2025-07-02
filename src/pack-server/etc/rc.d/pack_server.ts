@@ -270,7 +270,6 @@ start = () => {
             const segments = filesystem.segments(path);
             if (method == "GET" && segments[0] == "list") {
                 if (segments[1] != undefined) {
-                    // TODO NOT WORKING
                     handleListPackageRequest(segments[1], respond);
                 } else {
                     handleDirectoryRequest(respond);
