@@ -17,10 +17,10 @@ function recursiveDirectoryList(path: string): string[][] {
         return [];
     }
     const files: string[][] = [];
-    for (const path of listing) {
-        if (string.sub(path, -1) == "/") {
+    for (const file of listing) {
+        if (string.sub(file, -1) == "/") {
             // directory, we need to recurse
-            const segment = string.sub(path, 1, -2);
+            const segment = string.sub(file, 1, -2);
             const sublisting = recursiveDirectoryList(
                 filesystem.concat(path, segment)
             );

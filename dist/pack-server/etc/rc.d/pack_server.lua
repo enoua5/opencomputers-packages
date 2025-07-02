@@ -13,9 +13,9 @@ local function recursiveDirectoryList(path)
         return {}
     end
     local files = {}
-    for path in listing do
-        if string.sub(path, -1) == "/" then
-            local segment = string.sub(path, 1, -2)
+    for file in listing do
+        if string.sub(file, -1) == "/" then
+            local segment = string.sub(file, 1, -2)
             local sublisting = recursiveDirectoryList(filesystem.concat(path, segment))
             for ____, subpath in ipairs(sublisting) do
                 files[#files + 1] = {
