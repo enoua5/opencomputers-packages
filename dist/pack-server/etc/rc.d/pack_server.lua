@@ -24,7 +24,7 @@ local function recursiveDirectoryList(path)
                 }
             end
         else
-            files[#files + 1] = {path}
+            files[#files + 1] = {file}
         end
     end
     return files

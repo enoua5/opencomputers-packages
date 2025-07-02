@@ -30,7 +30,7 @@ function recursiveDirectoryList(path: string): string[][] {
             }
         } else {
             // not a directory, don't recurse
-            files.push([path]);
+            files.push([file]);
         }
     }
     return files;
