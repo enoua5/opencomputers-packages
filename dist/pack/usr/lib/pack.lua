@@ -57,4 +57,109 @@ function ____exports.listAvailablePackages()
     local data = serialization.unserialize(body)
     return data
 end
+--- Fetch file information for a package
+function ____exports.getPackageFileInformation(pack)
+    local status, headers, body = lttp.request(
+        getServerAddress(),
+        getServerPort(),
+        "GET",
+        "/list/" .. pack
+    )
+    if status >= 300 then
+        error(
+            ("Failed to fetch file list, error " .. tostring(status)) .. " returned.",
+            0
+        )
+    end
+    if not body then
+        error("Failed to fetch file list, no data returned", 0)
+    end
+    local data = serialization.unserialize(body)
+    return data
+end
+--- Get information about a package
+function ____exports.getPackageInformation(pack)
+    local status, headers, body = lttp.request(
+        getServerAddress(),
+        getServerPort(),
+        "GET",
+        "/info/" .. pack
+    )
+    if status >= 300 then
+        error(
+            ("Failed to fetch package info, error " .. tostring(status)) .. " returned.",
+            0
+        )
+    end
+    if not body then
+        error("Failed to fetch package info, no data returned", 0)
+    end
+    local data = serialization.unserialize(body)
+    return data
+end
+--- Fetch uninstall script
+function ____exports.getUninstallScript(pack)
+    local status, headers, body = lttp.request(
+        getServerAddress(),
+        getServerPort(),
+        "GET",
+        "/remove/" .. pack
+    )
+    if status >= 300 then
+        error(
+            ("Failed to fetch uninstall script, error " .. tostring(status)) .. " returned.",
+            0
+        )
+    end
+    if not body then
+        error("Failed to fetch uninstall script, no data returned", 0)
+    end
+    return body
+end
+--- Fetch a chunk from a package directory
+function ____exports.getPackageChunk(pack, file, page)
+    if page == nil then
+        page = 0
+    end
+    local status, headers, body = lttp.request(
+        getServerAddress(),
+        getServerPort(),
+        "GET",
+        (("/download/" .. pack) .. "/") .. tostring(page),
+        {},
+        file
+    )
+    if status >= 300 then
+        error(
+            ("Failed to fetch chunk, error " .. tostring(status)) .. " returned.",
+            0
+        )
+    end
+    if not body then
+        error("Failed to fetch chunk, no data returned", 0)
+    end
+    return body
+end
+--- Fetch a list of packages that have updates available
+function ____exports.checkUpdates(packages_to_check)
+    local status, headers, body = lttp.request(
+        getServerAddress(),
+        getServerPort(),
+        "GET",
+        "/updates",
+        {},
+        serialization.serialize(packages_to_check)
+    )
+    if status >= 300 then
+        error(
+            ("Failed to check for updates, error " .. tostring(status)) .. " returned.",
+            0
+        )
+    end
+    if not body then
+        error("Failed to check for updates, no data returned", 0)
+    end
+    local data = serialization.unserialize(body)
+    return data
+end
 return ____exports

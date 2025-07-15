@@ -64,3 +64,116 @@ export function listAvailablePackages(): string[] {
     const data = serialization.unserialize(body);
     return data;
 }
+
+/** Fetch file information for a package */
+export function getPackageFileInformation(
+    pack: string
+): { name: string; size: number }[] {
+    const [status, headers, body] = lttp.request(
+        getServerAddress(),
+        getServerPort(),
+        "GET",
+        "/list/" + pack
+    );
+    if (status >= 300) {
+        throw "Failed to fetch file list, error " + status + " returned.";
+    }
+    if (!body) {
+        throw "Failed to fetch file list, no data returned";
+    }
+    const data = serialization.unserialize(body);
+    return data;
+}
+
+/** Get information about a package */
+export function getPackageInformation(pack: string): {
+    version: string;
+    name: string;
+    description: string;
+    setup: string;
+} {
+    const [status, headers, body] = lttp.request(
+        getServerAddress(),
+        getServerPort(),
+        "GET",
+        "/info/" + pack
+    );
+    if (status >= 300) {
+        throw "Failed to fetch package info, error " + status + " returned.";
+    }
+    if (!body) {
+        throw "Failed to fetch package info, no data returned";
+    }
+    const data = serialization.unserialize(body);
+    return data;
+}
+
+/** Fetch uninstall script */
+export function getUninstallScript(pack: string): string {
+    const [status, headers, body] = lttp.request(
+        getServerAddress(),
+        getServerPort(),
+        "GET",
+        "/remove/" + pack
+    );
+    if (status >= 300) {
+        throw (
+            "Failed to fetch uninstall script, error " + status + " returned."
+        );
+    }
+    if (!body) {
+        throw "Failed to fetch uninstall script, no data returned";
+    }
+    return body;
+}
+
+/** Fetch a chunk from a package directory */
+export function getPackageChunk(
+    pack: string,
+    file: string,
+    page: number = 0
+): string {
+    const [status, headers, body] = lttp.request(
+        getServerAddress(),
+        getServerPort(),
+        "GET",
+        "/download/" + pack + "/" + String(page),
+        {},
+        file
+    );
+    if (status >= 300) {
+        throw "Failed to fetch chunk, error " + status + " returned.";
+    }
+    if (!body) {
+        throw "Failed to fetch chunk, no data returned";
+    }
+    return body;
+}
+
+/** Fetch a list of packages that have updates available */
+export function checkUpdates(
+    packages_to_check: {
+        pack: string;
+        version: string;
+    }[]
+): {
+    pack: string;
+    version: string;
+}[] {
+    const [status, headers, body] = lttp.request(
+        getServerAddress(),
+        getServerPort(),
+        "GET",
+        "/updates",
+        {},
+        serialization.serialize(packages_to_check)
+    );
+    if (status >= 300) {
+        throw "Failed to check for updates, error " + status + " returned.";
+    }
+    if (!body) {
+        throw "Failed to check for updates, no data returned";
+    }
+    const data = serialization.unserialize(body);
+    return data;
+}
