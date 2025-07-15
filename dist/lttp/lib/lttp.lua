@@ -26,7 +26,7 @@ function ____exports.listen(port, callback, timeout)
         if getPort(args) == port then
             local action, channel = table.unpack(args)
             if action == "connection" then
-                local timeout_id = table.unpack(uuid.next())
+                local timeout_id = uuid.next()
                 message_timeouts[channel] = timeout_id
                 event.timer(
                     timeout,
