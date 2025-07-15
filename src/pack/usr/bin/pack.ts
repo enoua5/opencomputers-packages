@@ -51,6 +51,7 @@ function install(p: string) {
         const filename = filesystem.concat(tmp, file.name);
         const pages = math.ceil(file.size / 1024);
 
+        print(file.name);
         filesystem.makeDirectory(filesystem.path(filename));
         const [f] = io.open(filename, "w");
         if (f == null) {
