@@ -39,6 +39,17 @@ function ____exports.listen(port, callback, timeout)
                     message_timeouts[channel] = nil
                 end
             elseif action == "message" then
+                if message_timeouts[channel] ~= nil then
+                    event.cancel(message_timeouts[channel])
+                    message_timeouts[channel] = nil
+                end
+                local timeout_id = event.timer(
+                    timeout,
+                    function()
+                        network.tcp.close(channel)
+                    end
+                )
+                message_timeouts[channel] = timeout_id
                 local document = args[3]
                 local address = args[4]
                 local function respond(status, headers, body)

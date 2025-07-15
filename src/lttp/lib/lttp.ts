@@ -81,6 +81,15 @@ export function listen(
                     message_timeouts[channel] = null;
                 }
             } else if (action == "message") {
+                if (message_timeouts[channel] != null) {
+                    event.cancel(message_timeouts[channel]);
+                    message_timeouts[channel] = null;
+                }
+                const timeout_id = event.timer(timeout, () => {
+                    network.tcp.close(channel);
+                });
+                message_timeouts[channel] = timeout_id;
+
                 const document = args[2];
                 const address = args[3];
 
