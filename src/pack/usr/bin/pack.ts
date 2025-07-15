@@ -58,7 +58,11 @@ function install(p: string) {
         for (let page = 0; page < pages; page++) {
             const chunk = pack.getPackageChunk(p, file.name, page);
             f.write(chunk);
-            print("    " + String((((page + 1) / pages) * 1000) / 10) + "%");
+            print(
+                "    " +
+                    String(math.ceil(((page + 1) / pages) * 1000) / 10) +
+                    "%"
+            );
         }
         f.close();
     }

@@ -189,7 +189,9 @@ export function getPackageChunk(
         "GET",
         "/download/" + pack + "/" + String(page),
         {},
-        file
+        file,
+        10,
+        30
     );
     if (status >= 300) {
         throw "Failed to fetch chunk, error " + status + " returned.";

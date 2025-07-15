@@ -57,7 +57,7 @@ local function install(p)
             while page < pages do
                 local chunk = pack.getPackageChunk(p, file.name, page)
                 f:write(chunk)
-                print(("    " .. tostring((page + 1) / pages * 1000 / 10)) .. "%")
+                print(("    " .. tostring(math.ceil((page + 1) / pages * 1000) / 10)) .. "%")
                 page = page + 1
             end
         end

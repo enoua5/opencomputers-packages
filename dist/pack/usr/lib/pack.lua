@@ -165,7 +165,9 @@ function ____exports.getPackageChunk(pack, file, page)
         "GET",
         (("/download/" .. pack) .. "/") .. tostring(page),
         {},
-        file
+        file,
+        10,
+        30
     )
     if status >= 300 then
         error(
