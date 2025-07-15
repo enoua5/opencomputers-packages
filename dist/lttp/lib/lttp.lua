@@ -36,6 +36,8 @@ function ____exports.listen(port, callback, timeout)
                         end
                     end
                 )
+            elseif action == "close" then
+                message_timeouts[channel] = nil
             elseif action == "message" then
                 local document = args[3]
                 local address = args[4]

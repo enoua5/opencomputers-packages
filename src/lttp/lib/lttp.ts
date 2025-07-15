@@ -78,6 +78,8 @@ export function listen(
                         network.tcp.close(channel);
                     }
                 });
+            } else if (action == "close") {
+                message_timeouts[channel] = null;
             } else if (action == "message") {
                 const document = args[2];
                 const address = args[3];
