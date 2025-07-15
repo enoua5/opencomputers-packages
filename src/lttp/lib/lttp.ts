@@ -64,32 +64,21 @@ export function listen(
         throw "Port already bound";
     }
 
-    const message_timeouts: { [channel: Channel]: number | null } = {};
+    const message_timeouts: { [channel: Channel]: string | null } = {};
 
     tcp_listeners[port] = (name, ...args) => {
         if (getPort(args) === port) {
             const [action, channel] = args;
 
             if (action == "connection") {
-                const timeout_id = event.timer(timeout, () => {
-                    network.tcp.close(channel);
-                });
+                const [timeout_id] = uuid.next();
                 message_timeouts[channel] = timeout_id;
-            } else if (action == "close") {
-                if (message_timeouts[channel] != null) {
-                    event.cancel(message_timeouts[channel]);
-                    message_timeouts[channel] = null;
-                }
+                event.timer(timeout, () => {
+                    if (message_timeouts[channel] == timeout_id) {
+                        network.tcp.close(channel);
+                    }
+                });
             } else if (action == "message") {
-                if (message_timeouts[channel] != null) {
-                    event.cancel(message_timeouts[channel]);
-                    message_timeouts[channel] = null;
-                }
-                const timeout_id = event.timer(timeout, () => {
-                    network.tcp.close(channel);
-                });
-                message_timeouts[channel] = timeout_id;
-
                 const document = args[2];
                 const address = args[3];
 

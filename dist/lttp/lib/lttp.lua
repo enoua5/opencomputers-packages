@@ -26,30 +26,17 @@ function ____exports.listen(port, callback, timeout)
         if getPort(args) == port then
             local action, channel = table.unpack(args)
             if action == "connection" then
-                local timeout_id = event.timer(
+                local timeout_id = table.unpack(uuid.next())
+                message_timeouts[channel] = timeout_id
+                event.timer(
                     timeout,
                     function()
-                        network.tcp.close(channel)
+                        if message_timeouts[channel] == timeout_id then
+                            network.tcp.close(channel)
+                        end
                     end
                 )
-                message_timeouts[channel] = timeout_id
-            elseif action == "close" then
-                if message_timeouts[channel] ~= nil then
-                    event.cancel(message_timeouts[channel])
-                    message_timeouts[channel] = nil
-                end
             elseif action == "message" then
-                if message_timeouts[channel] ~= nil then
-                    event.cancel(message_timeouts[channel])
-                    message_timeouts[channel] = nil
-                end
-                local timeout_id = event.timer(
-                    timeout,
-                    function()
-                        network.tcp.close(channel)
-                    end
-                )
-                message_timeouts[channel] = timeout_id
                 local document = args[3]
                 local address = args[4]
                 local function respond(status, headers, body)
