@@ -37,6 +37,7 @@ local function getAvailableUpdates(installed)
 end
 local function install(p)
     print(("Downloading " .. p) .. "...")
+    local info = pack.getPackageInformation(p)
     local files = pack.getPackageFileInformation(p)
     local file_id = string.gsub(
         uuid.next(),
@@ -67,6 +68,7 @@ local function install(p)
     shell.execute(("install --from=/tmp --fromDir=/" .. file_id) .. " --noreboot")
     print("Cleaning up...")
     filesystem.remove(tmp)
+    pack.setInstalledPackageInformation(p, info)
 end
 local function main()
     if #args < 1 or options.h or options.help then

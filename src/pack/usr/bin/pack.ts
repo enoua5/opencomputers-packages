@@ -43,6 +43,7 @@ function getAvailableUpdates(installed: pack.PackfileData) {
 
 function install(p: string) {
     print("Downloading " + p + "...");
+    const info = pack.getPackageInformation(p);
     const files = pack.getPackageFileInformation(p);
     const [file_id] = string.gsub(uuid.next(), "-", "");
     const tmp = "/tmp/" + file_id;
@@ -71,6 +72,7 @@ function install(p: string) {
     shell.execute("install --from=/tmp --fromDir=/" + file_id + " --noreboot");
     print("Cleaning up...");
     filesystem.remove(tmp);
+    pack.setInstalledPackageInformation(p, info);
 }
 
 function main() {
