@@ -48,6 +48,7 @@ local function install(p)
     for ____, file in ipairs(files) do
         local filename = filesystem.concat(tmp, file.name)
         local pages = math.ceil(file.size / 1024)
+        print(file.name)
         filesystem.makeDirectory(filesystem.path(filename))
         local f = io.open(filename, "w")
         if f == nil then
