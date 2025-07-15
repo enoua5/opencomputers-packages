@@ -12,6 +12,44 @@ if config_file then
         config = serialization.unserialize(config_data)
     end
 end
+local PACKFILE = "/etc/packfile"
+local function writePackfile(data)
+    local packfile = io.open(PACKFILE, "w")
+    if packfile == nil then
+        error("Filed to update packfile", 0)
+    end
+    packfile:write(serialization.serialize(data))
+end
+--- Read information about installed packages
+function ____exports.readPackfile()
+    local packfile = io.open(PACKFILE, "r")
+    if packfile == nil then
+        local packfile_write = io.open(PACKFILE, "w")
+        if packfile_write == nil then
+            error("Filed to create packfile", 0)
+        end
+        packfile_write:write("{}")
+        packfile_write:close()
+        return {}
+    end
+    local content = packfile:read("*a")
+    if content == nil then
+        error("Filed to read packfile", 0)
+    end
+    return serialization.unserialize(content)
+end
+--- Set the package information listed in the packfile
+function ____exports.setInstalledPackageInformation(pack, info)
+    local data = ____exports.readPackfile()
+    data[pack] = info
+    writePackfile(data)
+end
+--- Remove the package form the installed package list
+function ____exports.removePackageRecord(pack)
+    local data = ____exports.readPackfile()
+    data[pack] = nil
+    writePackfile(data)
+end
 --- Get the server domain from config
 local function getServerPort()
     local server_port = config.server_port or 8530

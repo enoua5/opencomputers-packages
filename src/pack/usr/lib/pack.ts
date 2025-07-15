@@ -15,6 +15,57 @@ if (config_file) {
     }
 }
 
+const PACKFILE = "/etc/packfile";
+type PackfileData = {
+    [pack: string]: {
+        version: string;
+    } | null;
+};
+
+function writePackfile(data: PackfileData) {
+    const [packfile] = io.open(PACKFILE, "w");
+    if (packfile == null) {
+        throw "Filed to update packfile";
+    }
+    packfile.write(serialization.serialize(data));
+}
+
+/** Read information about installed packages */
+export function readPackfile(): PackfileData {
+    const [packfile] = io.open(PACKFILE, "r");
+    if (packfile == null) {
+        const [packfile_write] = io.open(PACKFILE, "w");
+        if (packfile_write == null) {
+            throw "Filed to create packfile";
+        }
+        packfile_write.write("{}");
+        packfile_write.close();
+        return {};
+    }
+    const content = packfile.read("*a");
+    if (content == null) {
+        throw "Filed to read packfile";
+    }
+    return serialization.unserialize(content);
+}
+
+/** Set the package information listed in the packfile */
+export function setInstalledPackageInformation(
+    pack: string,
+    info: PackfileData[string]
+): void {
+    const data = readPackfile();
+    data[pack] = info;
+    writePackfile(data);
+}
+
+/** Remove the package form the installed package list */
+export function removePackageRecord(pack: string): void {
+    const data = readPackfile();
+    data[pack] = null;
+    writePackfile(data);
+}
+
 /** Get the server domain from config */
 function getServerPort(): number {
     const server_port = config["server_port"] || 8530;

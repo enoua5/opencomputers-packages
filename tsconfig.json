@@ -24,6 +24,7 @@
             "dns",
             "network",
             "lttp",
+            "pack",
         ]
     }
 }
