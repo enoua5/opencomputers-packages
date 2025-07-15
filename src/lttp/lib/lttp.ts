@@ -71,7 +71,7 @@ export function listen(
             const [action, channel] = args;
 
             if (action == "connection") {
-                const [timeout_id] = uuid.next();
+                const timeout_id = uuid.next();
                 message_timeouts[channel] = timeout_id;
                 event.timer(timeout, () => {
                     if (message_timeouts[channel] == timeout_id) {
