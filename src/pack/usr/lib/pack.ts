@@ -1,6 +1,5 @@
 /** Library for programatic package management */
 
-import * as filesystem from "filesystem";
 import * as lttp from "lttp";
 import * as serialization from "serialization";
 import * as dns from "dns";
