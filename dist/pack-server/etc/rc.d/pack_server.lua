@@ -246,7 +246,8 @@ start = function()
             else
                 respond(405)
             end
-        end
+        end,
+        30
     )
 end
 stop = function()
