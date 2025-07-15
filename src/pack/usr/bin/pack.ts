@@ -46,24 +46,25 @@ function install(p: string) {
     const files = pack.getPackageFileInformation(p);
     const [file_id] = string.gsub(uuid.next(), "-", "");
     const tmp = "/tmp/" + file_id;
-    for(const file of files) {
+    for (const file of files) {
         const filename = filesystem.concat(tmp, file.name);
         const pages = math.ceil(file.size / 1024);
+
+        filesystem.makeDirectory(filesystem.path(filename));
         const [f] = io.open(filename, "w");
-        if(f == null) {
+        if (f == null) {
             throw "Failed to create " + file.name;
         }
-        for(let page = 0; page < pages; page ++) {
+        for (let page = 0; page < pages; page++) {
             const chunk = pack.getPackageChunk(p, file.name, page);
             f.write(chunk);
+            print("    " + String((((page + 1) / pages) * 1000) / 10) + "%");
         }
         f.close();
     }
 
     print("Installing " + p + "...");
-    shell.execute(
-        "install --from=/tmp --fromDir=/" + file_id + " --noreboot"
-    );
+    shell.execute("install --from=/tmp --fromDir=/" + file_id + " --noreboot");
     print("Cleaning up...");
     filesystem.remove(tmp);
 }
@@ -142,7 +143,7 @@ function main() {
         uninstall_file.close();
         print("Running uninstall...");
         shell.execute(filename);
-        print("Cleaning up...")
+        print("Cleaning up...");
         pack.removePackageRecord(args[1]);
         print("Done!");
         return;
@@ -177,7 +178,7 @@ function main() {
         }
         const installed = pack.readPackfile();
         const updates = getAvailableUpdates(installed);
-        for(const info of updates) {
+        for (const info of updates) {
             install(info.pack);
         }
         return;

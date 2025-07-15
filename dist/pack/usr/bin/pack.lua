@@ -47,6 +47,7 @@ local function install(p)
     for ____, file in ipairs(files) do
         local filename = filesystem.concat(tmp, file.name)
         local pages = math.ceil(file.size / 1024)
+        filesystem.makeDirectory(filesystem.path(filename))
         local f = io.open(filename, "w")
         if f == nil then
             error("Failed to create " .. file.name, 0)
@@ -56,6 +57,7 @@ local function install(p)
             while page < pages do
                 local chunk = pack.getPackageChunk(p, file.name, page)
                 f:write(chunk)
+                print(("    " .. tostring((page + 1) / pages * 1000 / 10)) .. "%")
                 page = page + 1
             end
         end
